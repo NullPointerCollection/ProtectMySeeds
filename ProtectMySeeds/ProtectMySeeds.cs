@@ -12,7 +12,7 @@ namespace ProtectMySeeds
     public class ProtectMySeeds : BaseUnityPlugin
     {
         internal const string ModName = "ProtectMySeeds";
-        internal const string ModVersion = "1.0.3";
+        internal const string ModVersion = "1.0.0";
         internal const string Author = "NullPointerCollection";
         internal const string ModGUID = "com.nullpointercollection.deepernorth";
 

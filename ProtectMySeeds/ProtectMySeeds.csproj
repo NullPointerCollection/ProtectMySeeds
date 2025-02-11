@@ -103,11 +103,7 @@
     <Compile Include="VersionHandshake.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CHANGELOG.md" />
-    <None Include="LICENSE" />
-    <None Include="manifest.json" />
     <None Include="packages.config" />
-    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="assets\ServerSync.dll" />

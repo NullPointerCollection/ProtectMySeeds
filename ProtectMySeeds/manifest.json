@@ -1,9 +1,0 @@
-{
-  "name": "ProtectMySeeds",
-  "version_number": "1.0.0",
-  "website_url": "https://github.com/NullPointerCollection/ProtectMySeeds",
-  "description": "A mod to recover seeds from broken crops",
-  "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.2202"
-  ]
-}

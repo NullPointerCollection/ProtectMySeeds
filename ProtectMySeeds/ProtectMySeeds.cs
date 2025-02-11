@@ -1,10 +1,7 @@
 ﻿using BepInEx;
-using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
-using System;
 using System.Reflection;
-using UnityEngine;
 
 namespace ProtectMySeeds
 {
@@ -12,18 +9,15 @@ namespace ProtectMySeeds
     public class ProtectMySeeds : BaseUnityPlugin
     {
         internal const string ModName = "ProtectMySeeds";
-        internal const string ModVersion = "1.0.4";
+        internal const string ModVersion = "1.0.0";
         internal const string Author = "NullPointerCollection";
-        internal const string ModGUID = "com.nullpointercollection.deepernorth";
-
-        internal static ManualLogSource Log;
+        internal const string ModGUID = "com.nullpointercollection.protectmyseeds";
+        internal static string ConnectionError = "";
+        public static readonly ManualLogSource ProtectMySeedsLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
         internal Harmony harmony = new(ModGUID);
-        ServerSync.ConfigSync configSync = new(ModGUID) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion, /*IsLocked = true,*/ ModRequired = true };
 
         public void Awake()
         {
-            Log = Logger;
-
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
     }
@@ -33,23 +27,40 @@ namespace ProtectMySeeds
     {
         public static void Postfix(Plant __instance)
         {
-            //Debug.LogError("Awake: " + __instance + " - " + __instance.m_name + " - " + __instance.name + " - " + __instance.m_grownPrefabs);
-
-            //Debug.LogError("Awake: " + ZNet.instance.GetTime());
-            var plantSeed = __instance.GetComponent<Piece>().m_resources[0].m_resItem.gameObject;
-            //var requirement = plantPiece.m_resources[0];
-
+            if (!__instance.gameObject.GetComponent<Piece>()) return;
             var dropOnDestroyed = __instance.gameObject.GetComponent<DropOnDestroyed>() ?? __instance.gameObject.AddComponent<DropOnDestroyed>();
             if (dropOnDestroyed.m_dropWhenDestroyed.IsEmpty())
             {
-                var dropTable = new DropTable();
-                dropTable.m_drops.Add(new DropTable.DropData { m_item = plantSeed, m_stackMin = 1, m_stackMax = 1, m_dontScale = false, m_weight = 1 });
-                //dropTable.m_drops.Add(new DropTable.DropData { m_item = ObjectDB.instance.GetItemPrefab("CarrotSeeds"), m_stackMin = 1, m_stackMax = 1, m_dontScale = false, m_weight = 1 });
+                var plantResources = __instance.gameObject.GetComponent<Piece>().m_resources;
+                DropTable dropTable = new();
+                int dropCount = 0;
+                foreach (var resource in plantResources)
+                {
+                    dropTable.m_drops.Add(new DropTable.DropData { m_item = resource.m_resItem.gameObject, m_stackMin = resource.m_amount, m_stackMax = resource.m_amount, m_dontScale = true, m_weight = 1 });
+                    dropCount += resource.m_amount;
+                }
+                dropTable.m_dropMin = dropCount;
+                dropTable.m_dropMax = dropCount;
+                dropTable.m_oneOfEach = true;
                 dropOnDestroyed.m_dropWhenDestroyed = dropTable;
             }
-            bool test = __instance.gameObject.GetComponent<Pickable>().m_nview.HasOwner();
-
         }
     }
 
+    [HarmonyPatch(typeof(Pickable), nameof(Pickable.Awake))]
+    public static class PickableAwakePatch
+    {
+        public static void Postfix(Pickable __instance)
+        {
+            if (__instance.m_respawnTimeMinutes > 0 || !__instance.gameObject.GetComponent<Destructible>()) return;
+            var dropOnDestroyed = __instance.gameObject.GetComponent<DropOnDestroyed>() ?? __instance.gameObject.AddComponent<DropOnDestroyed>();
+            if (dropOnDestroyed.m_dropWhenDestroyed.IsEmpty())
+            {
+                DropTable dropTable = new();
+                dropTable.m_drops.Add(new DropTable.DropData { m_item = __instance.m_itemPrefab, m_stackMin = __instance.m_amount, m_stackMax = __instance.m_amount, m_dontScale = true, m_weight = 1 });
+                dropTable.m_oneOfEach = true;
+                dropOnDestroyed.m_dropWhenDestroyed = dropTable;
+            }
+        }
+    }
 }

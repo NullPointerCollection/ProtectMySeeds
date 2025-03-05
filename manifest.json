@@ -1,6 +1,6 @@
 {
   "name": "ProtectMySeeds",
-  "version_number": "1.0.1",
+  "version_number": "1.0.2",
   "website_url": "https://github.com/NullPointerCollection/ProtectMySeeds",
   "description": "A mod to recover seeds from broken crops. No more wasting plants on your farm!",
   "dependencies": [

@@ -9,7 +9,7 @@ namespace ProtectMySeeds
     public class ProtectMySeeds : BaseUnityPlugin
     {
         internal const string ModName = "ProtectMySeeds";
-        internal const string ModVersion = "1.0.1";
+        internal const string ModVersion = "1.0.2";
         internal const string Author = "NullPointerCollection";
         internal const string ModGUID = "com.nullpointercollection.protectmyseeds";
         internal static string ConnectionError = "";
@@ -22,16 +22,16 @@ namespace ProtectMySeeds
         }
     }
 
-    [HarmonyPatch(typeof(Plant), nameof(Plant.Awake))]
+    [HarmonyPatch(typeof(Plant), nameof(Plant.Start))]
     public static class PlantAwakePatch
     {
         public static void Postfix(Plant __instance)
         {
-            if (!__instance.gameObject.GetComponent<Piece>()) return;
-            var dropOnDestroyed = __instance.gameObject.GetComponent<DropOnDestroyed>() ?? __instance.gameObject.AddComponent<DropOnDestroyed>();
+            if (!__instance.GetComponent<Piece>() || __instance.gameObject.layer.Equals(13)) return;
+            var dropOnDestroyed = __instance.GetComponent<DropOnDestroyed>() ?? __instance.gameObject.AddComponent<DropOnDestroyed>();
             if (dropOnDestroyed.m_dropWhenDestroyed.IsEmpty())
             {
-                var plantResources = __instance.gameObject.GetComponent<Piece>().m_resources;
+                var plantResources = __instance.GetComponent<Piece>().m_resources;
                 DropTable dropTable = new();
                 int dropCount = 0;
                 foreach (var resource in plantResources)
@@ -52,8 +52,8 @@ namespace ProtectMySeeds
     {
         public static void Postfix(Pickable __instance)
         {
-            if (__instance.m_respawnTimeMinutes > 0 || !__instance.gameObject.GetComponent<Destructible>()) return;
-            var dropOnDestroyed = __instance.gameObject.GetComponent<DropOnDestroyed>() ?? __instance.gameObject.AddComponent<DropOnDestroyed>();
+            if (__instance.m_respawnTimeMinutes > 0 || !__instance.GetComponent<Destructible>()) return;
+            var dropOnDestroyed = __instance.GetComponent<DropOnDestroyed>() ?? __instance.gameObject.AddComponent<DropOnDestroyed>();
             if (dropOnDestroyed.m_dropWhenDestroyed.IsEmpty())
             {
                 DropTable dropTable = new();
